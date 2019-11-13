@@ -8,7 +8,7 @@ throng({
   lifetime: Infinity
 }, start)
 
-function start() {
+function start(id) {
   const cool = require('cool-ascii-faces')
   const express = require('express')
   var bodyParser = require("body-parser");
@@ -25,6 +25,6 @@ function start() {
   .get('/', (req, res) => res.render('pages/index'))
   .get('/cool', (req, res) => res.send(cool()))
   .post('/zg2uni', (req, res) => zgyi2uni(req, res))
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+  .listen(PORT, () => console.log(`Listening on ${ PORT } ${ id }`))
 
 }

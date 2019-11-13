@@ -51,6 +51,10 @@ function transformObj(obj) {
 }
 
 function detect(string) {
+    if(Array.isArray(string)) {
+        return transformArray(string)
+    }
+
     if(typeof string === "object") {
         return transformObj(string)
     }
