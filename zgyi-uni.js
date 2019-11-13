@@ -1,6 +1,6 @@
 const assert = require("assert");
 const google_myanmar_tools = require("myanmar-tools");
-
+const _ = require("underscore");
 const detector = new google_myanmar_tools.ZawgyiDetector();
 const converter = new google_myanmar_tools.ZawgyiConverter();
 
@@ -11,8 +11,7 @@ const input2 = "အျပည္ျပည္ဆိုင္ရာ လူ႔အခ
 
 function zgyi2uni(req, res){
     let data = req.body.input
-    console.log(typeof data)
-    if (typeof data !== "string" && !Array.isArray(data)) {
+    if (typeof data !== "string" && !Array.isArray(data) && typeof data !== "object") {
         return res.send({
             status: false,
             errMsg: "input must be array or string"
@@ -26,35 +25,46 @@ function zgyi2uni(req, res){
         })
     }
 
+    if(typeof data === "object" && !Array.isArray(data)) {
+        return res.send({
+            status: true,
+            data: transformObj(data)
+        })
+    }
+
     if(Array.isArray(data)) {
         return res.send({
             status: true,
-            data: detect(data.toString()).split(",")
+            data: transformArray(data)
         })
     }
 }
 
+function transformArray(arr) {
+    const map1 = arr.map(x => detect(x));
+    return map1
+}
+
+function transformObj(obj) {
+    const map1 = _.mapObject(obj, (x, y) => detect(x))
+    return map1
+}
+
 function detect(string) {
+    if(typeof string === "object") {
+        return transformObj(string)
+    }
+
+    if(typeof string !== "string") {
+        return string
+    }
     const score = detector.getZawgyiProbability(string);
     let returnString = string
     if (score > 0.999) {
         returnString = converter.zawgyiToUnicode(string)
     }
-
+    console.log(returnString)
     return returnString
 }
 
 module.exports = {zgyi2uni}
-
-// Detect that the second string is Zawgyi:
-// const score1 = detector.getZawgyiProbability(input1);
-// const score2 = detector.getZawgyiProbability(input2);
-// assert(score1 < 0.001);
-// assert(score2 > 0.999);
-// console.log("Unicode Score:", score1.toFixed(6));
-// console.log("Zawgyi Score:", score2.toFixed(6));
-
-// // Convert the second string to Unicode:
-// const input2converted = converter.zawgyiToUnicode(input2);
-// assert.equal(input1, input2converted);
-// console.log("Converted Text:", input2converted);
